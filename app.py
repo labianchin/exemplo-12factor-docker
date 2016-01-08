@@ -10,13 +10,6 @@ port_redis=os.environ.get('PORT_REDIS', '6379')
 app = Flask(__name__)
 redis = Redis(host=host_redis, port=port_redis)
 
-def handler(signum, frame):
-    print 'Signal handler called with signal', signum
-    server.terminate()
-    server.join()
-
-signal.signal(signal.SIGTERM, handler)
-
 @app.route('/')
 def hello():
     redis.incr('hits')
@@ -28,3 +21,10 @@ if __name__ == "__main__":
 
     server = Process(target=run_server)
     server.start()
+    
+    def server_handler(signum, frame):
+        print 'Signal handler called with signal', signum
+        server.terminate()
+        server.join()
+    
+    signal.signal(signal.SIGTERM, server_handler)
